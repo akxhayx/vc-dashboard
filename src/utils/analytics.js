@@ -348,6 +348,7 @@ export const getSectorAnalysis = (startups) => {
         avgScore: 0,
         totalMOIC: 0,
         totalRuleOf40: 0,
+        totalLtvCac: 0,
         companies: []
       };
     }
@@ -364,6 +365,7 @@ export const getSectorAnalysis = (startups) => {
     if (s.ruleOf40 !== null) {
       sectors[sector].totalRuleOf40 += s.ruleOf40;
     }
+    sectors[sector].totalLtvCac += s.ltvcacRatio || 0;
     sectors[sector].companies.push(s.Startup);
   });
 
@@ -375,6 +377,7 @@ export const getSectorAnalysis = (startups) => {
     sectors[key].avgScore = parseFloat((sectors[key].avgScore / count).toFixed(0));
     sectors[key].totalMOIC = parseFloat((sectors[key].totalMOIC / count).toFixed(2));
     sectors[key].avgRuleOf40 = parseFloat((sectors[key].totalRuleOf40 / count).toFixed(1));
+    sectors[key].avgLtvCac = parseFloat((sectors[key].totalLtvCac / count).toFixed(2));
   });
 
   return sectors;

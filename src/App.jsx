@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import KPICard from './components/KPICard';
-import SectorHeatmap from './components/SectorHeatmap';
+import SectorMatrix from './components/charts/SectorMatrix';
 import EfficiencyQuadrant from './components/charts/EfficiencyQuadrant';
 import RunwayGauge from './components/charts/RunwayGauge';
 import ValuationBubble from './components/charts/ValuationBubble';
@@ -191,7 +191,7 @@ function App() {
               </section>
 
               <section className="section">
-                <SectorHeatmap sectors={sectors} />
+                <SectorMatrix sectors={sectors} startups={startups} />
               </section>
 
               <section className="section">

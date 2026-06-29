@@ -1,0 +1,183 @@
+.sector-matrix {
+  width: 100%;
+}
+
+.sector-matrix-header {
+  margin-bottom: 20px;
+}
+
+.sector-matrix-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.chart-subtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* Three-column layout */
+.sector-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* Individual card */
+.sector-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card header */
+.sector-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+.sector-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sector-card-badge {
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 1px 8px;
+  line-height: 1.6;
+}
+
+/* Metric rows */
+.sector-card-metrics {
+  padding: 16px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  width: 100px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.metric-bar-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.metric-bar-fill.negative {
+  background: #EF4444;
+  opacity: 0.5;
+}
+
+.metric-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.metric-value.na {
+  color: rgba(239, 68, 68, 0.7);
+  font-weight: 500;
+}
+
+/* Divider */
+.sector-card-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0 16px;
+}
+
+/* Company pills */
+.sector-card-companies {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.company-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.tier-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 900px) {
+  .sector-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .metric-label {
+    width: 80px;
+    font-size: 10px;
+  }
+
+  .metric-value {
+    width: 44px;
+    font-size: 10px;
+  }
+
+  .sector-card-header {
+    padding: 12px 14px;
+  }
+
+  .sector-card-metrics {
+    padding: 12px 14px 10px;
+    gap: 10px;
+  }
+
+  .sector-card-companies {
+    padding: 10px 14px 14px;
+  }
+}
