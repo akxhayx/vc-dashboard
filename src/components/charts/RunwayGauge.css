@@ -1,0 +1,257 @@
+.runway-gauge-container {
+  width: 100%;
+  padding: 20px 0;
+}
+
+.chart-header {
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.chart-subtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* Summary stats */
+.runway-stats-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.stat-count {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-card.critical {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.stat-card.critical .stat-count {
+  color: #EF4444;
+}
+
+.stat-card.warning {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.stat-card.warning .stat-count {
+  color: #F59E0B;
+}
+
+.stat-card.healthy {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.stat-card.healthy .stat-count {
+  color: #10B981;
+}
+
+/* Gauge grid */
+.gauge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+/* Individual gauge card */
+.gauge-card {
+  width: 160px;
+  height: 120px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease forwards;
+  opacity: 0;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gauge-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Critical card pulse animation */
+.gauge-card.critical {
+  animation: slideUp 0.4s ease forwards, criticalPulse 2s ease-in-out infinite;
+}
+
+@keyframes criticalPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px 0 rgba(239, 68, 68, 0.2);
+  }
+}
+
+/* Company name */
+.card-company {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Gauge wrapper - arc + number */
+.card-gauge-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arc-gauge {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+}
+
+.arc-progress {
+  transition: all 0.3s ease;
+}
+
+/* Runway number */
+.card-runway {
+  position: relative;
+  z-index: 1;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1;
+}
+
+/* Burn rate */
+.card-burn {
+  font-size: 9px;
+  color: var(--text-tertiary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gauge-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .gauge-card {
+    width: 140px;
+    height: 110px;
+    padding: 10px;
+  }
+
+  .card-company {
+    font-size: 10px;
+  }
+
+  .card-runway {
+    font-size: 18px;
+  }
+
+  .card-burn {
+    font-size: 8px;
+  }
+
+  .card-gauge-wrapper {
+    width: 70px;
+    height: 70px;
+  }
+
+  .arc-gauge {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gauge-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .gauge-card {
+    width: 120px;
+    height: 100px;
+    padding: 8px;
+  }
+
+  .card-company {
+    font-size: 9px;
+  }
+
+  .card-runway {
+    font-size: 16px;
+  }
+
+  .card-gauge-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+
+  .arc-gauge {
+    width: 60px;
+    height: 60px;
+  }
+}

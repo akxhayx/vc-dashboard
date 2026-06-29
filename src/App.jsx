@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import KPICard from './components/KPICard';
 import SectorHeatmap from './components/SectorHeatmap';
 import EfficiencyMatrix from './components/EfficiencyMatrix';
-import RunwayAnalysis from './components/RunwayAnalysis';
+import RunwayGauge from './components/charts/RunwayGauge';
 import ValuationBubble from './components/charts/ValuationBubble';
 import StartupTable from './components/StartupTable';
 import FileUpload from './components/FileUpload';
@@ -252,7 +252,7 @@ function App() {
               </section>
 
               <section className="section">
-                <RunwayAnalysis startups={startups} />
+                <RunwayGauge startups={startups} />
               </section>
             </motion.div>
           )}
