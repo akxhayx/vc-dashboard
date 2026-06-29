@@ -39,8 +39,9 @@ export const calculateMetrics = (startups) => {
     // ===== MARGIN ANALYSIS =====
 
     // Gross Margin: (Revenue_Monthly - COGS) / Revenue_Monthly
-    let grossMargin = 0;
-    if (mrr > 0) {
+    // Returns null if COGS is missing or zero (can't calculate without COGS)
+    let grossMargin = null;
+    if (mrr > 0 && cogs > 0) {
       grossMargin = parseFloat((((mrr - cogs) / mrr) * 100).toFixed(1));
     }
 
@@ -100,12 +101,17 @@ export const calculateMetrics = (startups) => {
     }
 
     // Revenue multiple based on sector
-    const revenueMultiple = determineMultiple(sector, yoyGrowth, grossMargin, magicNumber);
-
-    // Implied Valuation: ARR × Multiple
+    // Skip SaaS scoring for DeepTech / Aerospace (different valuation model)
+    let revenueMultiple = null;
     let impliedValuation = 0;
-    if (arr > 0) {
-      impliedValuation = parseFloat((arr * revenueMultiple).toFixed(0));
+    const isDeepTech = sector && sector.toLowerCase().includes('deeptech');
+
+    if (!isDeepTech) {
+      revenueMultiple = determineMultiple(sector, yoyGrowth, grossMargin, magicNumber);
+      // Implied Valuation: ARR × Multiple
+      if (arr > 0 && revenueMultiple > 0) {
+        impliedValuation = parseFloat((arr * revenueMultiple).toFixed(0));
+      }
     }
 
     // ===== UNIT ECONOMICS =====
@@ -125,7 +131,7 @@ export const calculateMetrics = (startups) => {
       (magicNumber * 50 + (ltvcacRatio > 3 ? 50 : ltvcacRatio * 16.67))
     );
 
-    const marginScore = Math.min(100, grossMargin);
+    const marginScore = grossMargin !== null ? Math.min(100, grossMargin) : 0;
 
     let runwayScore = 0;
     if (runway !== null) {
@@ -134,19 +140,24 @@ export const calculateMetrics = (startups) => {
 
     // ===== COMPOSITE SCORES =====
 
-    const operationalHealth = (growthScore + efficiencyScore + marginScore) / 3;
+    // Skip investor scoring for DeepTech (use alternative models)
+    let operationalHealth = null;
+    let investorScore = null;
 
-    // Investor Score: 35% growth, 30% efficiency, 20% margin, 15% runway
-    const investorScore = (
-      growthScore * 0.35 +
-      efficiencyScore * 0.3 +
-      marginScore * 0.2 +
-      runwayScore * 0.15
-    );
+    if (!isDeepTech) {
+      operationalHealth = (growthScore + efficiencyScore + marginScore) / 3;
+      // Investor Score: 35% growth, 30% efficiency, 20% margin, 15% runway
+      investorScore = (
+        growthScore * 0.35 +
+        efficiencyScore * 0.3 +
+        marginScore * 0.2 +
+        runwayScore * 0.15
+      );
+    }
 
     // Determine stage and tier
     const stage = determineStage(arr, burnRate, runway);
-    const tier = determineTier(investorScore);
+    const tier = investorScore !== null ? determineTier(investorScore) : null;
 
     return {
       ...startup,
@@ -364,8 +375,8 @@ export const getSectorAnalysis = (startups) => {
 };
 
 export const formatCurrency = (value) => {
-  if (value >= 1e9) return `₹${(value / 1e9).toFixed(1)}B`;
-  if (value >= 1e7) return `₹${(value / 1e7).toFixed(0)}Cr`;
+  // Consistent scaling: >= 1e7 (10M) always use Crores, don't mix B/Cr/M
+  if (value >= 1e7) return `₹${(value / 1e7).toFixed(1)}Cr`;
   if (value >= 1e6) return `₹${(value / 1e6).toFixed(1)}M`;
   if (value >= 1e3) return `₹${(value / 1e3).toFixed(0)}K`;
   return `₹${value.toFixed(0)}`;
