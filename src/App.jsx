@@ -151,17 +151,18 @@ function App() {
                     delay={0}
                   />
                   <KPICard
-                    label="Portfolio Health"
-                    value={`${portfolio.portfolioHealth.toFixed(0)}%`}
-                    subtitle={`${portfolio.healthyRunway} with healthy runway`}
-                    trend={portfolio.avgInvestorScore - 70}
+                    label="Weighted Avg MOIC"
+                    value={`${portfolio.totalMOIC.toFixed(1)}x`}
+                    subtitle="multiple on invested capital"
+                    trend={portfolio.totalMOIC - 2}
                     delay={0.1}
                   />
                   <KPICard
-                    label="Avg Gross Margin"
-                    value={`${portfolio.avgMargin.toFixed(0)}%`}
-                    subtitle="across portfolio"
-                    trend={portfolio.avgMargin - 55}
+                    label="Total Portfolio Value"
+                    value={formatCurrency(portfolio.totalPortfolioValue)}
+                    subtitle="current position value"
+                    trend={((portfolio.totalPortfolioValue - portfolio.totalInvested) / portfolio.totalInvested) * 100}
+                    trendLabel="return"
                     delay={0.2}
                   />
                   <KPICard
@@ -212,9 +213,21 @@ function App() {
                   />
                   <KPICard
                     label="Median Revenue Multiple"
-                    value={`${(startups.reduce((sum, s) => sum + s.revenueMultiple, 0) / startups.length).toFixed(1)}x`}
+                    value={`${(() => {
+                      const sorted = [...startups].map(s => s.revenueMultiple).sort((a, b) => a - b);
+                      const mid = Math.floor(sorted.length / 2);
+                      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+                    })().toFixed(1)}x`}
                     subtitle="ARR valuation"
                     delay={0.2}
+                  />
+                  <KPICard
+                    label="Total Invested"
+                    value={formatCurrency(portfolio.totalInvested)}
+                    subtitle="capital deployed"
+                    trend={portfolio.totalPortfolioValue > 0 ? ((portfolio.totalPortfolioValue - portfolio.totalInvested) / portfolio.totalInvested) * 100 : 0}
+                    trendLabel="gain"
+                    delay={0.3}
                   />
                 </div>
               </section>
