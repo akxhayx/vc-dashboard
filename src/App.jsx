@@ -49,6 +49,21 @@ function App() {
       const portfolioMetrics = getPortfolioMetrics(enriched);
       const sectorMetrics = getSectorAnalysis(enriched);
 
+      // DEBUG: Log first 5 companies' key metrics
+      console.log('=== DATA VERIFICATION ===');
+      console.log('First 5 companies:');
+      enriched.slice(0, 5).forEach((s, i) => {
+        console.log(`${i + 1}. ${s.Startup}`, {
+          runway: s.runway,
+          grossMargin: s.grossMargin,
+          magicNumber: s.magicNumber,
+          sector: s.sector,
+          arr: s.arr,
+          impliedValuation: s.impliedValuation,
+          moic: s.moic
+        });
+      });
+
       setStartups(enriched);
       setPortfolio(portfolioMetrics);
       setSectors(sectorMetrics);
