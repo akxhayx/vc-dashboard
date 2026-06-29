@@ -1,22 +1,32 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
-import { motion } from 'framer-motion';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, LabelList } from 'recharts';
 
 const RunwayAnalysis = ({ startups }) => {
-  const data = startups
-    .map(s => ({
-      name: s.Startup,
-      runway: Math.min(s.runway, 36), // Cap at 36 for visualization
-      actualRunway: s.runway,
-      burnRate: Math.abs(s.burnRate) / 1000000,
-      sector: s.sector
-    }))
-    .sort((a, b) => a.runway - b.runway);
+  // Filter startups with valid runway data
+  const validStartups = startups.filter(s => s.runway !== null && s.runway > 0);
 
-  const getRunwayColor = (runway) => {
-    if (runway < 6) return 'var(--error)';
-    if (runway < 12) return 'var(--warning)';
-    return 'var(--success)';
+  // Log first 3 companies' runway values for debugging
+  console.log('Runway values (first 3):');
+  validStartups.slice(0, 3).forEach((s, i) => {
+    console.log(`  ${i + 1}. ${s.Startup}: runway=${s.runway} (type: ${typeof s.runway})`);
+  });
+
+  // Sort ascending by runway - most critical (lowest) first
+  const sortedStartups = [...validStartups].sort((a, b) => a.runway - b.runway);
+
+  const data = sortedStartups.map(s => ({
+    name: s.Startup,
+    runway: Math.min(s.runway, 36), // Cap at 36 for display
+    actualRunway: s.runway, // Keep actual value for labels and tooltip
+    burnRate: Math.abs(s.burnRate) / 1000000,
+    sector: s.sector,
+    displayLabel: s.runway > 36 ? '36m+' : `${s.runway.toFixed(0)}m`
+  }));
+
+  const getRunwayColor = (runwayValue) => {
+    if (runwayValue < 6) return '#EF4444'; // Red - critical
+    if (runwayValue < 12) return '#F59E0B'; // Amber - warning
+    return '#10B981'; // Green - healthy
   };
 
   const CustomTooltip = ({ active, payload }) => {
@@ -43,15 +53,19 @@ const RunwayAnalysis = ({ startups }) => {
   };
 
   const stats = {
-    critical: data.filter(d => d.runway < 6).length,
-    warning: data.filter(d => d.runway >= 6 && d.runway < 12).length,
-    healthy: data.filter(d => d.runway >= 12).length
+    critical: data.filter(d => d.actualRunway < 6).length,
+    warning: data.filter(d => d.actualRunway >= 6 && d.actualRunway < 12).length,
+    healthy: data.filter(d => d.actualRunway >= 12).length
   };
+
+  // Dynamic height: 36px per company + padding
+  const chartHeight = Math.max(300, data.length * 36);
 
   return (
     <div className="runway-analysis">
       <div className="chart-header">
         <h3>Runway Analysis</h3>
+        <p className="chart-subtitle">Cash position and burn rate • Most critical at top</p>
         <div className="runway-stats">
           <div className="runway-stat critical">
             <span className="stat-value">{stats.critical}</span>
@@ -67,32 +81,94 @@ const RunwayAnalysis = ({ startups }) => {
           </div>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={400}>
+
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <BarChart
           data={data}
           layout="horizontal"
-          margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
+          margin={{ top: 10, right: 80, left: 150, bottom: 30 }}
         >
+          {/* X-axis: Runway in months */}
           <XAxis
             type="number"
+            domain={[0, 36]}
             stroke="var(--text-tertiary)"
             tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }}
-            label={{ value: 'Months of Runway', position: 'bottom', fill: 'var(--text-secondary)', fontSize: 12 }}
+            label={{
+              value: 'Months of Runway',
+              position: 'bottom',
+              offset: 10,
+              fill: 'var(--text-secondary)',
+              fontSize: 12
+            }}
           />
+
+          {/* Y-axis: Company names */}
           <YAxis
             type="category"
             dataKey="name"
             stroke="var(--text-tertiary)"
-            tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
-            width={110}
+            tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
+            width={140}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-hover)' }} />
-          <ReferenceLine x={6} stroke="var(--error)" strokeDasharray="3 3" strokeWidth={2} />
-          <ReferenceLine x={12} stroke="var(--warning)" strokeDasharray="3 3" strokeWidth={2} />
-          <Bar dataKey="runway" radius={[0, 4, 4, 0]}>
+
+          {/* Tooltip on hover */}
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+          />
+
+          {/* Reference lines at critical thresholds */}
+          <ReferenceLine
+            x={6}
+            stroke="rgba(239, 68, 68, 0.5)"
+            strokeDasharray="4 4"
+            strokeWidth={1.5}
+            label={{
+              value: '6m (critical)',
+              position: 'top',
+              fill: 'rgba(239, 68, 68, 0.7)',
+              fontSize: 10
+            }}
+          />
+          <ReferenceLine
+            x={12}
+            stroke="rgba(245, 158, 11, 0.5)"
+            strokeDasharray="4 4"
+            strokeWidth={1.5}
+            label={{
+              value: '12m (target)',
+              position: 'top',
+              fill: 'rgba(245, 158, 11, 0.7)',
+              fontSize: 10
+            }}
+          />
+
+          {/* Bars with color-coded runway status */}
+          <Bar
+            dataKey="runway"
+            fill="#8884d8"
+            radius={[0, 4, 4, 0]}
+            isAnimationActive={true}
+          >
+            {/* Color each bar by runway status */}
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getRunwayColor(entry.runway)} />
+              <Cell
+                key={`cell-${index}`}
+                fill={getRunwayColor(entry.actualRunway)}
+                opacity={0.85}
+              />
             ))}
+
+            {/* Runway labels at end of bars: "20m", "36m+", etc */}
+            <LabelList
+              dataKey="displayLabel"
+              position="right"
+              fill="white"
+              fontSize={11}
+              fontWeight={500}
+              offset={8}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
