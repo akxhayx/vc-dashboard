@@ -228,13 +228,14 @@ const determineTier = (score) => {
 const determineMultiple = (sector, growth, margin, magic) => {
   let baseMultiple = 5;
 
-  // Sector premiums
-  if (sector === 'SaaS') baseMultiple = 12;
-  else if (sector === 'Fintech') baseMultiple = 10;
-  else if (sector === 'EdTech') baseMultiple = 6;
-  else if (sector === 'EV & Mobility') baseMultiple = 8;
-  else if (sector === 'E-commerce') baseMultiple = 3;
-  else if (sector === 'Deep Tech') baseMultiple = 15;
+  // Sector premiums - using includes for flexible sector names
+  const sectorLower = (sector || '').toLowerCase();
+  if (sectorLower.includes('saas')) baseMultiple = 12;
+  else if (sectorLower.includes('fintech')) baseMultiple = 10;
+  else if (sectorLower.includes('edtech')) baseMultiple = 6;
+  else if (sectorLower.includes('ev') || sectorLower.includes('mobility')) baseMultiple = 8;
+  else if (sectorLower.includes('e-commerce') || sectorLower.includes('ecommerce')) baseMultiple = 3;
+  else if (sectorLower.includes('deeptech') || sectorLower.includes('deep tech') || sectorLower.includes('aerospace')) baseMultiple = 15;
 
   // Growth premium - only if growth exists
   if (growth !== null) {
