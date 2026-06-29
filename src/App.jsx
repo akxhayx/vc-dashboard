@@ -4,7 +4,7 @@ import KPICard from './components/KPICard';
 import SectorHeatmap from './components/SectorHeatmap';
 import EfficiencyMatrix from './components/EfficiencyMatrix';
 import RunwayAnalysis from './components/RunwayAnalysis';
-import ValuationChart from './components/ValuationChart';
+import ValuationBubble from './components/charts/ValuationBubble';
 import StartupTable from './components/StartupTable';
 import FileUpload from './components/FileUpload';
 import { parseCSV, validateStartupData } from './utils/csvParser';
@@ -196,7 +196,7 @@ function App() {
 
               <section className="section">
                 <div className="chart-grid">
-                  <ValuationChart startups={startups} />
+                  <ValuationBubble startups={startups} />
                 </div>
               </section>
             </motion.div>

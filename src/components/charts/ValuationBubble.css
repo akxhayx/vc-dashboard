@@ -1,0 +1,154 @@
+.valuation-bubble-container {
+  width: 100%;
+  padding: 20px 0;
+}
+
+.chart-header {
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.chart-subtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.bubble-wrapper {
+  position: relative;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bubble-wrapper svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Legend */
+.bubble-legend {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  z-index: 10;
+  min-width: 180px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-text {
+  white-space: nowrap;
+}
+
+.legend-text strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Tooltip */
+.bubble-tooltip {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 200px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-company {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+  gap: 16px;
+}
+
+.tooltip-row:last-of-type {
+  margin-bottom: 8px;
+}
+
+.tooltip-value {
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: right;
+}
+
+.tooltip-sector {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bubble-legend {
+    top: 8px;
+    right: 8px;
+    padding: 8px 12px;
+    min-width: 150px;
+  }
+
+  .legend-item {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .bubble-tooltip {
+    min-width: 160px;
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+
+  .tooltip-company {
+    font-size: 12px;
+  }
+}
