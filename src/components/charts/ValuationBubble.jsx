@@ -129,23 +129,8 @@ const ValuationBubble = ({ startups }) => {
       })
       .on('click', function (event, d) {
         event.stopPropagation();
-        setSelectedBubble(selectedBubble === d.id ? null : d.id);
+        setSelectedBubble(prev => prev === d.id ? null : d.id);
       });
-
-    // Add selection ring for clicked bubble
-    circles.attr('filter', d =>
-      selectedBubble === d.id
-        ? 'drop-shadow(0 0 8px rgba(255,255,255,0.4))'
-        : 'none'
-    ).attr('stroke', d =>
-      selectedBubble === d.id
-        ? 'white'
-        : getSectorColor(d.sector)
-    ).attr('stroke-width', d =>
-      selectedBubble === d.id
-        ? 3
-        : 1.5
-    );
 
     // Add labels inside bubbles
     const labels = bubbleGroup
@@ -177,7 +162,19 @@ const ValuationBubble = ({ startups }) => {
     return () => {
       simulation.stop();
     };
-  }, [dimensions, validStartups, selectedBubble]);
+  }, [dimensions, validStartups]); // selectedBubble intentionally excluded — handled separately
+
+  // Separate effect: update selection ring without restarting simulation
+  useEffect(() => {
+    if (!svgRef.current) return;
+    d3.select(svgRef.current)
+      .selectAll('circle')
+      .attr('stroke', d => selectedBubble === d.id ? 'white' : getSectorColor(d.sector))
+      .attr('stroke-width', d => selectedBubble === d.id ? 3 : 1.5)
+      .attr('filter', d => selectedBubble === d.id
+        ? 'drop-shadow(0 0 8px rgba(255,255,255,0.4))'
+        : 'none');
+  }, [selectedBubble]);
 
   const formatCurrency = (value) => {
     if (value >= 1e7) return `₹${(value / 1e7).toFixed(1)}Cr`;

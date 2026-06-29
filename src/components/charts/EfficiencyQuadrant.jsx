@@ -39,9 +39,9 @@ const EfficiencyQuadrant = ({ startups }) => {
   const chartWidth = width - 2 * padding;
   const chartHeight = height - 2 * padding;
 
-  // Scale functions
+  // Scale functions — scaleY returns SVG coordinates (includes padding offset)
   const scaleX = (value) => (value / 15) * chartWidth;
-  const scaleY = (value) => chartHeight - (value / 3) * chartHeight;
+  const scaleY = (value) => padding + chartHeight - (value / 3) * chartHeight;
 
   // Get quadrant label
   const getQuadrantLabel = (x, y) => {

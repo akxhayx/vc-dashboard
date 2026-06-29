@@ -49,21 +49,6 @@ function App() {
       const portfolioMetrics = getPortfolioMetrics(enriched);
       const sectorMetrics = getSectorAnalysis(enriched);
 
-      // DEBUG: Log first 5 companies' key metrics
-      console.log('=== DATA VERIFICATION ===');
-      console.log('First 5 companies:');
-      enriched.slice(0, 5).forEach((s, i) => {
-        console.log(`${i + 1}. ${s.Startup}`, {
-          runway: s.runway,
-          grossMargin: s.grossMargin,
-          magicNumber: s.magicNumber,
-          sector: s.sector,
-          arr: s.arr,
-          impliedValuation: s.impliedValuation,
-          moic: s.moic
-        });
-      });
-
       setStartups(enriched);
       setPortfolio(portfolioMetrics);
       setSectors(sectorMetrics);
@@ -229,7 +214,11 @@ function App() {
                   <KPICard
                     label="Median Revenue Multiple"
                     value={`${(() => {
-                      const sorted = [...startups].map(s => s.revenueMultiple).sort((a, b) => a - b);
+                      const sorted = [...startups]
+                        .map(s => s.revenueMultiple)
+                        .filter(v => v !== null && v !== undefined)
+                        .sort((a, b) => a - b);
+                      if (sorted.length === 0) return 0;
                       const mid = Math.floor(sorted.length / 2);
                       return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
                     })().toFixed(1)}x`}

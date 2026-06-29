@@ -35,43 +35,49 @@ const RunwayGauge = ({ startups }) => {
   // SVG Arc gauge component
   const ArcGauge = ({ runway, color }) => {
     const size = 80;
+    const cx = size / 2;
+    const cy = size / 2;
     const radius = 28;
-    const circumference = 2 * Math.PI * radius;
     const progress = Math.min(runway / 36, 1);
-    const strokeDashoffset = circumference * (1 - progress);
 
-    // Draw a 270° arc (starting at -135° to 135°)
+    // Arc spans 270° from -135° (bottom-left) clockwise to +135° (bottom-right)
     const startAngle = -135 * (Math.PI / 180);
-    const endAngle = 135 * (Math.PI / 180);
-    const startX = size / 2 + radius * Math.cos(startAngle);
-    const startY = size / 2 + radius * Math.sin(startAngle);
-    const endX = size / 2 + radius * Math.cos(endAngle);
-    const endY = size / 2 + radius * Math.sin(endAngle);
+    const totalAngle = 270 * (Math.PI / 180);
+
+    const toXY = (angle) => ({
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    });
+
+    const bgEnd = toXY(startAngle + totalAngle);
+    const bgStart = toXY(startAngle);
+
+    // Foreground arc endpoint at progress fraction of 270°
+    const fgEndAngle = startAngle + totalAngle * progress;
+    const fgEnd = toXY(fgEndAngle);
+    const fgLargeArc = totalAngle * progress > Math.PI ? 1 : 0;
 
     return (
       <svg width={size} height={size} className="arc-gauge">
-        {/* Background arc - full 270° */}
+        {/* Background arc — full 270° */}
         <path
-          d={`M ${startX} ${startY} A ${radius} ${radius} 0 1 1 ${endX} ${endY}`}
+          d={`M ${bgStart.x.toFixed(2)} ${bgStart.y.toFixed(2)} A ${radius} ${radius} 0 1 1 ${bgEnd.x.toFixed(2)} ${bgEnd.y.toFixed(2)}`}
           fill="none"
           stroke="rgba(255,255,255,0.1)"
           strokeWidth="3"
           strokeLinecap="round"
         />
 
-        {/* Foreground arc - progress */}
-        <path
-          d={`M ${startX} ${startY} A ${radius} ${radius} 0 ${progress > 0.75 ? 1 : 0} 1 ${
-            size / 2 + radius * Math.cos(startAngle + (endAngle - startAngle) * progress)
-          } ${size / 2 + radius * Math.sin(startAngle + (endAngle - startAngle) * progress)}`}
-          fill="none"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          className="arc-progress"
-        />
+        {/* Foreground arc — geometric endpoint only, no dasharray */}
+        {progress > 0 && (
+          <path
+            d={`M ${bgStart.x.toFixed(2)} ${bgStart.y.toFixed(2)} A ${radius} ${radius} 0 ${fgLargeArc} 1 ${fgEnd.x.toFixed(2)} ${fgEnd.y.toFixed(2)}`}
+            fill="none"
+            stroke={color}
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        )}
       </svg>
     );
   };
