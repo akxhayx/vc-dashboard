@@ -347,6 +347,7 @@ export const getSectorAnalysis = (startups) => {
         avgMultiple: 0,
         avgScore: 0,
         totalMOIC: 0,
+        totalRuleOf40: 0,
         companies: []
       };
     }
@@ -360,6 +361,9 @@ export const getSectorAnalysis = (startups) => {
     sectors[sector].avgMultiple += s.revenueMultiple || 0;
     sectors[sector].avgScore += s.investorScore || 0;
     sectors[sector].totalMOIC += s.moic || 0;
+    if (s.ruleOf40 !== null) {
+      sectors[sector].totalRuleOf40 += s.ruleOf40;
+    }
     sectors[sector].companies.push(s.Startup);
   });
 
@@ -370,6 +374,7 @@ export const getSectorAnalysis = (startups) => {
     sectors[key].avgMultiple = parseFloat((sectors[key].avgMultiple / count).toFixed(1));
     sectors[key].avgScore = parseFloat((sectors[key].avgScore / count).toFixed(0));
     sectors[key].totalMOIC = parseFloat((sectors[key].totalMOIC / count).toFixed(2));
+    sectors[key].avgRuleOf40 = parseFloat((sectors[key].totalRuleOf40 / count).toFixed(1));
   });
 
   return sectors;
