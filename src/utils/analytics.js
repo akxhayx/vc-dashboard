@@ -372,7 +372,7 @@ export const formatCurrency = (value) => {
 };
 
 export const formatPercent = (value) => {
-  if (value === null) return 'N/A';
+  if (value === null || isNaN(value)) return 'N/A';
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
 };
 

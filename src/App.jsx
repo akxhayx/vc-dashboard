@@ -161,7 +161,7 @@ function App() {
                     label="Total Portfolio Value"
                     value={formatCurrency(portfolio.totalPortfolioValue)}
                     subtitle="current position value"
-                    trend={((portfolio.totalPortfolioValue - portfolio.totalInvested) / portfolio.totalInvested) * 100}
+                    trend={portfolio.totalInvested > 0 ? ((portfolio.totalPortfolioValue - portfolio.totalInvested) / portfolio.totalInvested) * 100 : 0}
                     trendLabel="return"
                     delay={0.2}
                   />
