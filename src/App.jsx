@@ -43,9 +43,9 @@ function App() {
 
     try {
       const data = await parseCSV(file);
-      validateStartupData(data);
-      
-      const enriched = calculateMetrics(data);
+      const validatedData = validateStartupData(data);
+
+      const enriched = calculateMetrics(validatedData);
       const portfolioMetrics = getPortfolioMetrics(enriched);
       const sectorMetrics = getSectorAnalysis(enriched);
 
