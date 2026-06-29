@@ -1,0 +1,140 @@
+.efficiency-quadrant-container {
+  width: 100%;
+  padding: 20px 0;
+}
+
+.chart-header {
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.chart-subtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.quadrant-svg {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  height: auto;
+}
+
+.company-dot {
+  cursor: pointer;
+  transition: r 0.2s ease, filter 0.2s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.company-dot:hover {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Legend */
+.quadrant-legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Footnote */
+.chart-footnote {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chart-wrapper {
+    padding: 12px;
+  }
+
+  .quadrant-svg {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .quadrant-legend {
+    flex-direction: column;
+    gap: 8px;
+    bottom: 12px;
+    right: 12px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .legend-item {
+    font-size: 11px;
+  }
+
+  .chart-footnote {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .quadrant-svg {
+    width: 100%;
+  }
+
+  .chart-wrapper {
+    overflow-x: auto;
+  }
+
+  .quadrant-legend {
+    font-size: 10px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .legend-item {
+    font-size: 10px;
+  }
+
+  .chart-footnote {
+    font-size: 10px;
+  }
+}
