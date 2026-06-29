@@ -1,96 +1,201 @@
-// Analytics engine for VC metrics calculations
+// Analytics engine for VC metrics calculations - production grade
 
 export const calculateMetrics = (startups) => {
   return startups.map(startup => {
-    const arr = parseFloat(startup.ARR);
-    const mrr = parseFloat(startup.Revenue_Monthly);
-    const expenses = parseFloat(startup.Expenses);
-    const burnRate = parseFloat(startup.Burn_Rate);
-    const cac = parseFloat(startup.CAC);
-    const ltv = parseFloat(startup.LTV);
-    const users = parseFloat(startup.Users);
-    const newCustomers = parseFloat(startup.New_Customers_Monthly);
+    // Parse core metrics from CSV
+    const arr = parseFloat(startup.ARR) || 0;
+    const arrPrevYear = parseFloat(startup.ARR_PrevYear) || 0;
+    const mrr = parseFloat(startup.Revenue_Monthly) || 0;
+    const cogs = parseFloat(startup.COGS) || 0;
+    const expenses = parseFloat(startup.Expenses) || 0;
+    const burnRate = parseFloat(startup.Burn_Rate) || 0;
+    const cashBalance = parseFloat(startup.Cash_Balance) || 0;
+    const salesMarketingSpend = parseFloat(startup.Sales_Marketing_Spend) || 0;
+    const cac = parseFloat(startup.CAC) || 0;
+    const ltv = parseFloat(startup.LTV) || 0;
+    const users = parseFloat(startup.Users) || 0;
+    const newCustomers = parseFloat(startup.New_Customers_Monthly) || 0;
 
-    // Growth metrics
-    const momGrowth = mrr > 0 ? ((mrr - (mrr / 1.15)) / (mrr / 1.15)) * 100 : 0;
-    const yoyGrowth = arr > 0 ? ((arr - (arr / 1.5)) / (arr / 1.5)) * 100 : 0;
-    
-    // Margin analysis
-    const grossMargin = mrr > 0 ? ((mrr - (expenses * 0.3)) / mrr) * 100 : 0;
-    const netMargin = mrr > 0 ? ((mrr - expenses) / mrr) * 100 : 0;
-    
-    // Efficiency metrics
-    const magicNumber = mrr > 0 && expenses > 0 ? (mrr * 0.15) / (expenses * 0.5) : 0;
-    const burnMultiple = mrr > 0 && burnRate < 0 ? Math.abs(burnRate) / (mrr * 0.15) : 0;
-    const ruleOf40 = yoyGrowth + netMargin;
-    
+    // Investment metrics
+    const investmentAmount = parseFloat(startup.Investment_Amount) || 0;
+    const entryValuation = parseFloat(startup.Entry_Valuation) || 0;
+    const lastRoundValuation = parseFloat(startup.Last_Round_Valuation) || 0;
+    const ownershipPct = parseFloat(startup.Ownership_Pct) || 0;
+
+    // Sector read directly from CSV
+    const sector = startup.Sector || 'Other';
+
+    // ===== GROWTH METRICS =====
+
+    // YoY Growth: (ARR - ARR_PrevYear) / ARR_PrevYear
+    let yoyGrowth = null;
+    if (arrPrevYear > 0) {
+      yoyGrowth = parseFloat((((arr - arrPrevYear) / arrPrevYear) * 100).toFixed(1));
+    }
+
+    // MoM Growth: no prior month data = null (don't fake it)
+    const momGrowth = null; // Would need Revenue_Monthly_PrevMonth from CSV
+
+    // ===== MARGIN ANALYSIS =====
+
+    // Gross Margin: (Revenue_Monthly - COGS) / Revenue_Monthly
+    let grossMargin = 0;
+    if (mrr > 0) {
+      grossMargin = parseFloat((((mrr - cogs) / mrr) * 100).toFixed(1));
+    }
+
+    // Net Margin: (Revenue_Monthly - Expenses) / Revenue_Monthly
+    let netMargin = 0;
+    if (mrr > 0) {
+      netMargin = parseFloat((((mrr - expenses) / mrr) * 100).toFixed(1));
+    }
+
+    // ===== EFFICIENCY METRICS =====
+
+    // Net New ARR
+    const netNewARR = arr - arrPrevYear;
+
+    // Magic Number: Net_New_ARR / Sales_Marketing_Spend
+    let magicNumber = 0;
+    if (salesMarketingSpend > 0) {
+      magicNumber = parseFloat((netNewARR / salesMarketingSpend).toFixed(2));
+    }
+
+    // Burn Multiple: Math.abs(Burn_Rate * 12) / (ARR - ARR_PrevYear)
+    let burnMultiple = 0;
+    if (netNewARR > 0) {
+      burnMultiple = parseFloat((Math.abs(burnRate * 12) / netNewARR).toFixed(2));
+    }
+
+    // Rule of 40
+    const ruleOf40 = yoyGrowth !== null ? parseFloat((yoyGrowth + netMargin).toFixed(1)) : null;
+
     // CAC Payback (months)
-    const cacPayback = cac > 0 && mrr > 0 && newCustomers > 0 
-      ? (cac * newCustomers) / (mrr / newCustomers * grossMargin / 100) 
-      : 0;
-    
-    // Runway (months)
-    const cashBalance = arr * 0.4; // Estimated cash
-    const runway = burnRate < 0 ? Math.abs(cashBalance / burnRate) : 999;
-    
-    // Valuation multiples
-    const revenueMultiple = determineMultiple(startup.Startup, yoyGrowth, grossMargin, magicNumber);
-    const impliedValuation = arr * revenueMultiple;
-    
-    // Unit economics
-    const arpu = users > 0 ? arr / users / 12 : 0;
-    const ltvcacRatio = cac > 0 ? ltv / cac : 0;
-    
-    // Health scores (0-100)
-    const growthScore = Math.min(100, yoyGrowth > 100 ? 95 : yoyGrowth * 0.8);
-    const efficiencyScore = Math.min(100, (magicNumber * 50 + (ltvcacRatio > 3 ? 50 : ltvcacRatio * 16.67)));
+    let cacPayback = 0;
+    if (cac > 0 && mrr > 0 && newCustomers > 0) {
+      const mrrPerCustomer = mrr / newCustomers;
+      const grossMarginDecimal = grossMargin / 100;
+      if (mrrPerCustomer * grossMarginDecimal > 0) {
+        cacPayback = parseFloat(((cac * newCustomers) / (mrrPerCustomer * grossMarginDecimal)).toFixed(1));
+      }
+    }
+
+    // ===== FINANCIAL HEALTH =====
+
+    // Runway: Cash_Balance / Math.abs(Burn_Rate)
+    let runway = null;
+    if (burnRate < 0 && cashBalance > 0) {
+      runway = parseFloat((cashBalance / Math.abs(burnRate)).toFixed(1));
+    } else if (burnRate >= 0) {
+      runway = 999; // Not burning cash
+    }
+
+    // ===== VALUATION METRICS =====
+
+    // MOIC: (Last_Round_Valuation * Ownership_Pct / 100) / Investment_Amount
+    let moic = 0;
+    if (investmentAmount > 0 && lastRoundValuation > 0 && ownershipPct > 0) {
+      const currentValue = (lastRoundValuation * ownershipPct) / 100;
+      moic = parseFloat((currentValue / investmentAmount).toFixed(2));
+    }
+
+    // Revenue multiple based on sector
+    const revenueMultiple = determineMultiple(sector, yoyGrowth, grossMargin, magicNumber);
+
+    // Implied Valuation: ARR × Multiple
+    let impliedValuation = 0;
+    if (arr > 0) {
+      impliedValuation = parseFloat((arr * revenueMultiple).toFixed(0));
+    }
+
+    // ===== UNIT ECONOMICS =====
+
+    const arpu = users > 0 ? parseFloat((arr / users / 12).toFixed(0)) : 0;
+    const ltvcacRatio = cac > 0 ? parseFloat((ltv / cac).toFixed(2)) : 0;
+
+    // ===== HEALTH SCORES (0-100) =====
+
+    let growthScore = 0;
+    if (yoyGrowth !== null) {
+      growthScore = Math.min(100, yoyGrowth > 100 ? 95 : yoyGrowth * 0.8);
+    }
+
+    const efficiencyScore = Math.min(
+      100,
+      (magicNumber * 50 + (ltvcacRatio > 3 ? 50 : ltvcacRatio * 16.67))
+    );
+
     const marginScore = Math.min(100, grossMargin);
-    const runwayScore = Math.min(100, runway > 18 ? 100 : runway * 5.56);
-    
-    // Composite scores
+
+    let runwayScore = 0;
+    if (runway !== null) {
+      runwayScore = Math.min(100, runway > 18 ? 100 : runway * 5.56);
+    }
+
+    // ===== COMPOSITE SCORES =====
+
     const operationalHealth = (growthScore + efficiencyScore + marginScore) / 3;
-    const investorScore = (growthScore * 0.35 + efficiencyScore * 0.3 + marginScore * 0.2 + runwayScore * 0.15);
-    
-    // Sector classification
-    const sector = classifySector(startup.Startup);
-    
+
+    // Investor Score: 35% growth, 30% efficiency, 20% margin, 15% runway
+    const investorScore = (
+      growthScore * 0.35 +
+      efficiencyScore * 0.3 +
+      marginScore * 0.2 +
+      runwayScore * 0.15
+    );
+
+    // Determine stage and tier
+    const stage = determineStage(arr, burnRate, runway);
+    const tier = determineTier(investorScore);
+
     return {
       ...startup,
       // Core metrics
       arr,
+      arrPrevYear,
       mrr,
+      cogs,
       expenses,
       burnRate,
+      cashBalance,
+      salesMarketingSpend,
       cac,
       ltv,
       users,
-      
+
+      // Investment metrics
+      investmentAmount,
+      entryValuation,
+      lastRoundValuation,
+      ownershipPct,
+
       // Growth
-      momGrowth: parseFloat(momGrowth.toFixed(1)),
-      yoyGrowth: parseFloat(yoyGrowth.toFixed(1)),
-      
+      momGrowth,
+      yoyGrowth,
+
       // Margins
-      grossMargin: parseFloat(grossMargin.toFixed(1)),
-      netMargin: parseFloat(netMargin.toFixed(1)),
-      
+      grossMargin,
+      netMargin,
+
       // Efficiency
-      magicNumber: parseFloat(magicNumber.toFixed(2)),
-      burnMultiple: parseFloat(burnMultiple.toFixed(2)),
-      ruleOf40: parseFloat(ruleOf40.toFixed(1)),
-      cacPayback: parseFloat(cacPayback.toFixed(1)),
-      ltvcacRatio: parseFloat(ltvcacRatio.toFixed(1)),
-      
+      magicNumber,
+      burnMultiple,
+      ruleOf40,
+      cacPayback,
+      ltvcacRatio,
+      netNewARR,
+
       // Financial health
-      runway: parseFloat(runway.toFixed(1)),
-      cashBalance: parseFloat(cashBalance.toFixed(0)),
-      
+      runway,
+
       // Valuation
       revenueMultiple: parseFloat(revenueMultiple.toFixed(1)),
-      impliedValuation: parseFloat(impliedValuation.toFixed(0)),
-      
+      impliedValuation,
+      moic,
+
       // Unit economics
-      arpu: parseFloat(arpu.toFixed(0)),
-      
+      arpu,
+
       // Scores
       growthScore: parseFloat(growthScore.toFixed(0)),
       efficiencyScore: parseFloat(efficiencyScore.toFixed(0)),
@@ -98,25 +203,13 @@ export const calculateMetrics = (startups) => {
       runwayScore: parseFloat(runwayScore.toFixed(0)),
       operationalHealth: parseFloat(operationalHealth.toFixed(0)),
       investorScore: parseFloat(investorScore.toFixed(0)),
-      
+
       // Classification
       sector,
-      stage: determineStage(arr, burnRate, runway),
-      tier: determineTier(investorScore)
+      stage,
+      tier
     };
   });
-};
-
-const classifySector = (name) => {
-  const lower = name.toLowerCase();
-  if (lower.includes('electric') || lower.includes('energy') || lower.includes('mobility') || lower.includes('ather') || lower.includes('bounce') || lower.includes('ola')) return 'EV & Mobility';
-  if (lower.includes('fintech') || lower.includes('razorpay') || lower.includes('cred') || lower.includes('zerodha') || lower.includes('groww') || lower.includes('zolve')) return 'Fintech';
-  if (lower.includes('saas') || lower.includes('freshworks') || lower.includes('khatabook') || lower.includes('trupeer')) return 'SaaS';
-  if (lower.includes('edtech') || lower.includes('byju') || lower.includes('upgrad')) return 'EdTech';
-  if (lower.includes('food') || lower.includes('swiggy') || lower.includes('licious')) return 'Food & Delivery';
-  if (lower.includes('commerce') || lower.includes('meesho') || lower.includes('urban') || lower.includes('fynd') || lower.includes('cashify')) return 'E-commerce';
-  if (lower.includes('aerospace') || lower.includes('lat')) return 'Deep Tech';
-  return 'Other';
 };
 
 const determineStage = (arr, burnRate, runway) => {
@@ -132,11 +225,9 @@ const determineTier = (score) => {
   return 'Tier 3';
 };
 
-const determineMultiple = (name, growth, margin, magic) => {
-  const sector = classifySector(name);
-  
+const determineMultiple = (sector, growth, margin, magic) => {
   let baseMultiple = 5;
-  
+
   // Sector premiums
   if (sector === 'SaaS') baseMultiple = 12;
   else if (sector === 'Fintech') baseMultiple = 10;
@@ -144,84 +235,130 @@ const determineMultiple = (name, growth, margin, magic) => {
   else if (sector === 'EV & Mobility') baseMultiple = 8;
   else if (sector === 'E-commerce') baseMultiple = 3;
   else if (sector === 'Deep Tech') baseMultiple = 15;
-  
-  // Growth premium
-  if (growth > 150) baseMultiple *= 1.5;
-  else if (growth > 100) baseMultiple *= 1.3;
-  else if (growth > 50) baseMultiple *= 1.1;
-  
+
+  // Growth premium - only if growth exists
+  if (growth !== null) {
+    if (growth > 150) baseMultiple *= 1.5;
+    else if (growth > 100) baseMultiple *= 1.3;
+    else if (growth > 50) baseMultiple *= 1.1;
+  }
+
   // Margin premium
   if (margin > 70) baseMultiple *= 1.3;
   else if (margin > 50) baseMultiple *= 1.15;
-  
+
   // Efficiency premium
   if (magic > 1.5) baseMultiple *= 1.2;
   else if (magic > 1.0) baseMultiple *= 1.1;
-  
+
   return Math.max(2, Math.min(25, baseMultiple));
 };
 
 export const getPortfolioMetrics = (startups) => {
   const total = startups.length;
-  const totalARR = startups.reduce((sum, s) => sum + s.arr, 0);
-  const totalUsers = startups.reduce((sum, s) => sum + s.users, 0);
-  const avgGrowth = startups.reduce((sum, s) => sum + s.yoyGrowth, 0) / total;
-  const avgMargin = startups.reduce((sum, s) => sum + s.grossMargin, 0) / total;
-  const totalValuation = startups.reduce((sum, s) => sum + s.impliedValuation, 0);
-  const avgInvestorScore = startups.reduce((sum, s) => sum + s.investorScore, 0) / total;
-  
-  const healthyRunway = startups.filter(s => s.runway > 12).length;
-  const strongLTV = startups.filter(s => s.ltvcacRatio > 3).length;
-  const highGrowth = startups.filter(s => s.yoyGrowth > 50).length;
-  
+
+  // Core portfolio metrics
+  const totalARR = startups.reduce((sum, s) => sum + (s.arr || 0), 0);
+  const totalUsers = startups.reduce((sum, s) => sum + (s.users || 0), 0);
+
+  // Growth and margin
+  const validGrowth = startups.filter(s => s.yoyGrowth !== null);
+  const avgGrowth = validGrowth.length > 0
+    ? validGrowth.reduce((sum, s) => sum + s.yoyGrowth, 0) / validGrowth.length
+    : 0;
+  const avgMargin = startups.reduce((sum, s) => sum + (s.grossMargin || 0), 0) / total;
+
+  // Valuation
+  const totalValuation = startups.reduce((sum, s) => sum + (s.impliedValuation || 0), 0);
+  const avgInvestorScore = startups.reduce((sum, s) => sum + (s.investorScore || 0), 0) / total;
+
+  // Investment metrics
+  const totalInvested = startups.reduce((sum, s) => sum + (s.investmentAmount || 0), 0);
+  const totalPortfolioValue = startups.reduce((sum, s) => {
+    const currentValue = ((s.lastRoundValuation || 0) * (s.ownershipPct || 0)) / 100;
+    return sum + currentValue;
+  }, 0);
+
+  // MOIC: weighted average by investment amount
+  let totalMOIC = 0;
+  const moicWeightedSum = startups.reduce((sum, s) => {
+    return sum + ((s.moic || 0) * (s.investmentAmount || 0));
+  }, 0);
+  if (totalInvested > 0) {
+    totalMOIC = parseFloat((moicWeightedSum / totalInvested).toFixed(2));
+  }
+
+  // Health indicators
+  const healthyRunway = startups.filter(s => s.runway !== null && s.runway > 12).length;
+  const strongLTV = startups.filter(s => (s.ltvcacRatio || 0) > 3).length;
+  const highGrowth = startups.filter(s => s.yoyGrowth !== null && s.yoyGrowth > 50).length;
+
+  // Portfolio health calculation
+  const runwayRatio = total > 0 ? healthyRunway / total : 0;
+  const ltvRatio = total > 0 ? strongLTV / total : 0;
+  const growthRatio = total > 0 ? highGrowth / total : 0;
+
   return {
     total,
     totalARR,
     totalUsers,
-    avgGrowth,
-    avgMargin,
+    avgGrowth: parseFloat(avgGrowth.toFixed(1)),
+    avgMargin: parseFloat(avgMargin.toFixed(1)),
     totalValuation,
-    avgInvestorScore,
+    avgInvestorScore: parseFloat(avgInvestorScore.toFixed(0)),
+
+    // Investment metrics
+    totalInvested,
+    totalPortfolioValue,
+    totalMOIC,
+
+    // Health indicators
     healthyRunway,
     strongLTV,
     highGrowth,
-    portfolioHealth: ((healthyRunway / total) * 0.33 + (strongLTV / total) * 0.33 + (highGrowth / total) * 0.34) * 100
+    portfolioHealth: parseFloat(((runwayRatio * 0.33 + ltvRatio * 0.33 + growthRatio * 0.34) * 100).toFixed(0))
   };
 };
 
 export const getSectorAnalysis = (startups) => {
   const sectors = {};
-  
+
   startups.forEach(s => {
-    if (!sectors[s.sector]) {
-      sectors[s.sector] = {
+    const sector = s.sector || 'Other';
+    if (!sectors[sector]) {
+      sectors[sector] = {
         count: 0,
         totalARR: 0,
         avgGrowth: 0,
         avgMargin: 0,
         avgMultiple: 0,
         avgScore: 0,
+        totalMOIC: 0,
         companies: []
       };
     }
-    
-    sectors[s.sector].count++;
-    sectors[s.sector].totalARR += s.arr;
-    sectors[s.sector].avgGrowth += s.yoyGrowth;
-    sectors[s.sector].avgMargin += s.grossMargin;
-    sectors[s.sector].avgMultiple += s.revenueMultiple;
-    sectors[s.sector].avgScore += s.investorScore;
-    sectors[s.sector].companies.push(s.Startup);
+
+    sectors[sector].count++;
+    sectors[sector].totalARR += s.arr || 0;
+    if (s.yoyGrowth !== null) {
+      sectors[sector].avgGrowth += s.yoyGrowth;
+    }
+    sectors[sector].avgMargin += s.grossMargin || 0;
+    sectors[sector].avgMultiple += s.revenueMultiple || 0;
+    sectors[sector].avgScore += s.investorScore || 0;
+    sectors[sector].totalMOIC += s.moic || 0;
+    sectors[sector].companies.push(s.Startup);
   });
-  
+
   Object.keys(sectors).forEach(key => {
     const count = sectors[key].count;
     sectors[key].avgGrowth = parseFloat((sectors[key].avgGrowth / count).toFixed(1));
     sectors[key].avgMargin = parseFloat((sectors[key].avgMargin / count).toFixed(1));
     sectors[key].avgMultiple = parseFloat((sectors[key].avgMultiple / count).toFixed(1));
     sectors[key].avgScore = parseFloat((sectors[key].avgScore / count).toFixed(0));
+    sectors[key].totalMOIC = parseFloat((sectors[key].totalMOIC / count).toFixed(2));
   });
-  
+
   return sectors;
 };
 
@@ -233,7 +370,10 @@ export const formatCurrency = (value) => {
   return `₹${value.toFixed(0)}`;
 };
 
-export const formatPercent = (value) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+export const formatPercent = (value) => {
+  if (value === null) return 'N/A';
+  return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+};
 
 export const formatNumber = (value) => {
   if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
