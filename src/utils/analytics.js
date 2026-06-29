@@ -57,7 +57,8 @@ export const calculateMetrics = (startups) => {
     const netNewARR = arr - arrPrevYear;
 
     // Magic Number: Net_New_ARR / Sales_Marketing_Spend
-    let magicNumber = 0;
+    // Returns null if Sales_Marketing_Spend is 0 or missing
+    let magicNumber = null;
     if (salesMarketingSpend > 0) {
       magicNumber = parseFloat((netNewARR / salesMarketingSpend).toFixed(2));
     }
@@ -72,8 +73,8 @@ export const calculateMetrics = (startups) => {
     const ruleOf40 = yoyGrowth !== null ? parseFloat((yoyGrowth + netMargin).toFixed(1)) : null;
 
     // CAC Payback (months)
-    let cacPayback = 0;
-    if (cac > 0 && mrr > 0 && newCustomers > 0) {
+    let cacPayback = null;
+    if (cac > 0 && mrr > 0 && newCustomers > 0 && grossMargin !== null) {
       const mrrPerCustomer = mrr / newCustomers;
       const grossMarginDecimal = grossMargin / 100;
       if (mrrPerCustomer * grossMarginDecimal > 0) {
