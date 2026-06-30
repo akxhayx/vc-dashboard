@@ -201,7 +201,7 @@ export const calculateMetrics = (startups) => {
       runway,
 
       // Valuation
-      revenueMultiple: parseFloat(revenueMultiple.toFixed(1)),
+      revenueMultiple: revenueMultiple !== null ? parseFloat(revenueMultiple.toFixed(1)) : null,
       impliedValuation,
       moic,
 
@@ -213,8 +213,8 @@ export const calculateMetrics = (startups) => {
       efficiencyScore: parseFloat(efficiencyScore.toFixed(0)),
       marginScore: parseFloat(marginScore.toFixed(0)),
       runwayScore: parseFloat(runwayScore.toFixed(0)),
-      operationalHealth: parseFloat(operationalHealth.toFixed(0)),
-      investorScore: parseFloat(investorScore.toFixed(0)),
+      operationalHealth: operationalHealth !== null ? parseFloat(operationalHealth.toFixed(0)) : null,
+      investorScore: investorScore !== null ? parseFloat(investorScore.toFixed(0)) : null,
 
       // Classification
       sector,
